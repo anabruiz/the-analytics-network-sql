@@ -1,1 +1,77 @@
+--1 cuales son los paises donde la empresa tiene tiendas?
+select pais
+from stg.store_master1;
+
+--2- Cuantos productos por subcategoria tiene disponible para la venta?
+select count (distinct subcategoria)
+from stg.product_master1;
+
+--3 Cuales son las ordenes de venta de Argentina de mayor a $100.000?
+select orden
+from stg.order_line_sale1
+WHERE	MONEDA = 'ARS' and VENTA >= 100000
+GROUP BY orden;
+
+--4 Obtener los decuentos otorgados durante Noviembre de 2022 en cada una de las monedas?
+SELECT descuento, moneda, fecha
+FROM stg.order_line_sale1
+WHERE fecha BETWEEN '2022-11-01' and '2022-11-30' AND descuento is not null;
+
+--5 Obtener los impuestos pagados en Europa durante el 2022.
+select impuestos
+from stg.order_line_sale1
+WHERE moneda = 'EUR' AND FECHA BETWEEN '2022-01-01' and '2022-12-31';
+
+--6 En cuantas ordenes se utilizaron creditos?
+select COUNT (orden)
+from stg.order_line_sale1
+WHERE creditos is not null;
+
+select *
+from stg.order_line_sale1
+
+--7 Cual es el % de descuentos otorgados (sobre las ventas) por tienda?
+SELECT TIENDA, DESCUENTO/VENTA AS descuento_otorgado
+FROM stg.order_line_sale1
+WHERE descuento is not null;
+
+--8Cual es el inventario promedio por dia que tiene cada tienda?
+SELECT tienda, 
+AVG (final) as promedio_tienda
+FROM stg.inventory1
+GROUP BY tienda;
+
+--9 Obtener las ventas netas y el porcentaje de descuento otorgado por producto en Argentina.
+SELECT producto, venta, descuento/venta as porcentaje_descuento
+FROM stg.order_line_sale1
+WHERE descuento is not null AND moneda = 'ARS';
+
+--10 Las tablas "market_count" y "super_store_count" representan dos sistemas distintos que usa la empresa 
+--para contar la cantidad de gente que ingresa a tienda, uno para las tiendas de Latinoamerica y otro para Europa. 
+--Obtener en una unica tabla, las entradas a tienda de ambos sistemas.
+SELECT * FROM stg.market_count1
+UNION ALL
+SELECT * FROM stg.super_store_count1 --no me arrojo error el formato fecha en ninguna de las dos tablas
+
+--11 Cuales son los productos disponibles para la venta (activos) de la marca Phillips?
+SELECT * FROM stg.product_master1
+WHERE nombre = 'PHILIPS' and is_active = '1'; --no supe que funcion usar que sea similar a un text that contains
+
+--12 Obtener el monto vendido por tienda y moneda y ordenarlo de mayor a menor por valor nominal.
+SELECT
+	tienda, moneda,
+	SUM (venta) as ventas 
+FROM stg.order_line_sale1
+GROUP BY tienda, moneda 
+ORDER BY ventas asc; 
+
+--13 Cual es el precio promedio de venta de cada producto en las distintas monedas? 
+--Recorda que los valores de venta, impuesto, descuentos y creditos es por el total de la linea.
+SELECT producto, moneda,
+AVG (venta) as promedio_venta
+FROM stg.order_line_sale1
+GROUP BY producto, moneda
+
+--14 Cual es la tasa de impuestos que se pago por cada orden de venta?
+SELECT *, impuestos/venta as tasa_impuestos from stg.order_line_sale1
 
